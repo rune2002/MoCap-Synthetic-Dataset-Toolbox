@@ -89,7 +89,3 @@ def extract_images_from_video(video, output_dir, downsample=3):
         frame += downsample
         vc.set(cv2.CAP_PROP_POS_FRAMES, frame)
         success, image = vc.read()
-
-if __name__ == '__main__':
-    output_directory = '_out'
-    extract_images_from_video_dir('videos', output_directory)

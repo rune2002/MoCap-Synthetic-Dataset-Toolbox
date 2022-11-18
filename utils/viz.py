@@ -70,7 +70,3 @@ class Viz:
         for image in os.listdir(images_dir):
             images.append(imageio.imread(os.path.join(images_dir, image)))
         imageio.mimsave(gif_path, images, fps=fps)
-
-
-if __name__ == '__main__':
-    assert True

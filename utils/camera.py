@@ -88,17 +88,3 @@ def euler_angle_to_rotation_matrix(x_deg, y_deg, z_deg):
     R = np.dot(R_z, np.dot( R_y, R_x ))
  
     return R
-    
-if __name__ == '__main__':
-    a = np.array([[1, 0, 0], [0, 1, 0]])
-    Rc = euler_angle_to_rotation_matrix(137.717, -88.013, -180.00)
-    tc = np.array([-56.982, 129.792, -0.383])
-    # print(Rc)
-    # print(np.shape(tc))
-
-    R, t = extrinsic_parameter(137.717, -88.013, -180.00, tc)
-    # print(R)
-    # print(np.shape(t))
-
-    b = mocap_to_camera(a, R, t)
-    # print(b)
