@@ -22,42 +22,56 @@ class Scorer:
         print(PCK_all)
 
     def score_all(self, metric):
-        predicted = np.array()
-        target = np.array()
+        predicted = None
+        target = None
         for key in list(self.d.keys()):
             assert key in list(self.t.keys())
-            predicted = np.append(predicted, self.d[key], axis=0)
-            target = np.append(target, self.t[key], axis=0)
-        return self.metric(predicted, target)
+            if predicted:
+                predicted = np.append(predicted, self.d[key], axis=0)
+            else:
+                predicted = np.array(self.d[key])
 
-    def score_each(self):
+            if target:
+                target = np.append(target, self.t[key], axis=0)
+            else:
+                target = np.array(self.t[key])
+
+        return metric(predicted, target)
+
+    def score_each(self, metric):
         scores = []
         for key in list(self.d.keys()):
             assert key in list(self.t.keys())
-            scores.append(self.metric(self.d[key], self.t[key]))
+            scores.append(metric(self.d[key], self.t[key]))
         return list(self.d.keys()), scores
 
     @staticmethod
     def mpjpe(predicted, target):
         """Mean per-joint position error (i.e. mean Euclidean distance)"""
         assert predicted.shape == target.shape
-        return np.mean(np.norm(predicted - target, dim=len(target.shape) - 1))
+        return np.mean(np.linalg.norm(predicted - target, axis=len(target.shape) - 1))
 
     @staticmethod
     def mpjpe_byjoint(predicted, target):
         """Mean per-joint position error (i.e. mean Euclidean distance)"""
         assert predicted.shape == target.shape
-        return np.mean(np.norm(predicted - target, dim=len(target.shape) - 1), dim=0)
+        return np.mean(np.linalg.norm(predicted - target, axis=len(target.shape) - 1), axis=0)
 
     @staticmethod
     def weighted_mpjpe(predicted, target, w):
         """Weighted mean per-joint position error (i.e. mean Euclidean distance)"""
         assert predicted.shape == target.shape
-        assert w.shape[0] == predicted.shape[0]
-        return np.mean(w * np.norm(predicted - target, dim=len(target.shape) - 1))
+        assert w.shape[0] == predicted.shape[1]
+        return np.mean(w * np.linalg.norm(predicted - target, axis=len(target.shape) - 1))
 
-    def PCK(self, gts, preds):
-        PCK_THRESHOLD = self.pck_threshold
+    def pck(self, gts, preds):
+        return self.PCK(gts, preds, self.pck_threshold)
+
+    def pck_byjoint(self, gts, preds):
+        return self.PCK_byjoint(gts, preds, self.pck_threshold)
+
+    @staticmethod
+    def PCK(gts, preds, PCK_THRESHOLD):
         sample_num = len(gts)
         total = 0
         true_positive = 0
@@ -72,8 +86,8 @@ class Scorer:
         pck = float(true_positive / total) * 100
         return pck
 
-    def PCK_byjoint(self, gts, preds):
-        PCK_THRESHOLD = self.pck_threshold
+    @staticmethod
+    def PCK_byjoint(gts, preds, PCK_THRESHOLD):
         sample_num = len(gts)
         total = 0
         true_positive = np.zeros(gts.shape[1])
