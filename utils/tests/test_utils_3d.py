@@ -22,9 +22,27 @@ def test_mpjpe():
     assert Scorer.mpjpe(p1, p2) == 0
 
 
+def test_mpjpe_with_unvalid():
+    p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
+    p2 = np.copy(p1)
+    p1[0][0] = np.zeros(3)
+    p2[0][0] = np.ones(3)
+    assert Scorer.mpjpe(p1, p2) == 0
+
+
 def test_mpjpe_byjoint():
     p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
     p2 = np.copy(p1)
+    assert_array_equal(
+        Scorer.weighted_mpjpe(p1, p2, np.ones(len(MOCAP_TO_HKMC))), np.zeros(len(MOCAP_TO_HKMC))
+    )
+
+
+def test_mpjpe_byjoint_with_unvalid():
+    p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
+    p2 = np.copy(p1)
+    p1[0][0] = np.zeros(3)
+    p2[0][0] = np.ones(3)
     assert_array_equal(
         Scorer.weighted_mpjpe(p1, p2, np.ones(len(MOCAP_TO_HKMC))), np.zeros(len(MOCAP_TO_HKMC))
     )
@@ -38,10 +56,29 @@ def test_weighted_mpjpe():
     )
 
 
+def test_weighted_mpjpe_with_unvalid():
+    p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
+    p2 = np.copy(p1)
+    p1[0][0] = np.zeros(3)
+    p2[0][0] = np.ones(3)
+    assert_array_equal(
+        Scorer.mpjpe_byjoint(p1, p2), np.zeros(len(MOCAP_TO_HKMC))
+    )
+
+
 def test_pck():
     p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
     p2 = np.copy(p1)
     assert Scorer.PCK(p1, p2, 150.0) == 100.0
+
+
+def test_pck_with_unvalid():
+    p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
+    p2 = np.copy(p1)
+    p1[0][0] = np.zeros(3)
+    p2[0][0] = np.ones(3)
+    num = np.prod(p1.shape) // 3
+    assert np.isclose(Scorer.PCK(p1, p2, 150.0), (num - 1) / num * 100)
 
 
 def test_pck_byjoint():
@@ -51,6 +88,28 @@ def test_pck_byjoint():
         Scorer.PCK_byjoint(p1, p2, 150.0), 100 * np.ones(len(MOCAP_TO_HKMC))
     )
 
+
+def test_pck_byjoint_with_unvalid():
+    p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
+    p2 = np.copy(p1)
+    p1[0][0] = np.zeros(3)
+    p2[0][0] = np.ones(3)
+    num = np.prod(p1.shape) // 3 // p1.shape[1]
+    a = 100 * np.ones(len(MOCAP_TO_HKMC))
+    a[0] = (num - 1) / num * 100
+    assert_array_equal(
+        Scorer.PCK_byjoint(p1, p2, 150.0), a
+    )
+
+
+def test_valid_mask():
+    a = np.zeros((5, 12, 3))
+    b = np.empty((5, 12, 3))
+    b.fill(True)
+    assert_array_equal(
+        Scorer.valid_mask(a), b
+    )
+    
 
 def test_scorer():
     d = load_npz('./utils/tests/test_utils_3d/test_3d.npz')
