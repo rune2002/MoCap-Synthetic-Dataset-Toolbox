@@ -6,19 +6,20 @@ Then, you will have a data folder:
    ${Repo}
    ├── data
       ├── config.json
-      ├── target.npz
       ├── C01
          ├── videos
             ├── M01_01.mp4
             ├── M01_02.mp4
             ...
          ├── calib.json
+         ├── target.npz
       ├── C02
          ├── videos
             ├── M01_01.mp4
             ├── M01_02.mp4
             ...
          ├── calib.json
+         ├── target.npz
    ```
 
 ## Extract images from videos
@@ -30,7 +31,6 @@ Then, you will have a data folder:
    ${Repo}
    ├── data
       ├── config.json
-      ├── target.npz
       ├── C01
          ├── videos
             ├── M01_01.mp4
@@ -41,6 +41,7 @@ Then, you will have a data folder:
             ├── M01_02
             ...
          ├── calib.json
+         ├── target.npz
       ├── C02
          ├── videos
             ├── M01_01.mp4
@@ -51,4 +52,5 @@ Then, you will have a data folder:
             ├── M01_02
             ...
          ├── calib.json
+         ├── target.npz
    ```

@@ -18,21 +18,23 @@ class Scorer:
         mpjpe_all = self.score_all(self.mpjpe)
         tests, mpjpe_each = self.score_each(self.mpjpe)
         pck_all = self.score_all(self.pck)
-        tests, PCK_each = self.score_each(self.pck)
-        print(mpjpe_all)
-        print(pck_all)
+        tests, pck_each = self.score_each(self.pck)
+        print(f'MPJPE: {mpjpe_all:.1f}mm')
+        print(f'PCK  : {pck_all:.1f}%')
+        print(dict(zip(tests, mpjpe_each)))
+        print(dict(zip(tests, pck_each)))
 
     def score_all(self, metric):
         predicted = None
         target = None
         for key in list(self.d.keys()):
             assert key in list(self.t.keys())
-            if predicted:
+            if predicted is not None:
                 predicted = np.append(predicted, self.d[key], axis=0)
             else:
                 predicted = np.array(self.d[key])
 
-            if target:
+            if target is not None:
                 target = np.append(target, self.t[key], axis=0)
             else:
                 target = np.array(self.t[key])
@@ -51,18 +53,14 @@ class Scorer:
         """Mean per-joint position error (i.e. mean Euclidean distance)"""
         assert predicted.shape == target.shape
         mask = Scorer.valid_mask(predicted)
-        p_ma = ma.masked_array(predicted, mask)
-        t_ma = ma.masked_array(target, mask)
-        return np.mean(np.linalg.norm(p_ma - t_ma, axis=len(t_ma.shape) - 1))
+        return np.mean(ma.masked_array(np.linalg.norm(predicted - target, axis=len(target.shape) - 1), mask))
 
     @staticmethod
     def mpjpe_byjoint(predicted, target):
         """Mean per-joint position error (i.e. mean Euclidean distance)"""
         assert predicted.shape == target.shape
         mask = Scorer.valid_mask(predicted)
-        p_ma = ma.masked_array(predicted, mask)
-        t_ma = ma.masked_array(target, mask)
-        return np.mean(np.linalg.norm(p_ma - t_ma, axis=len(t_ma.shape) - 1), axis=0)
+        return np.mean(ma.masked_array(np.linalg.norm(predicted - target, axis=len(target.shape) - 1), mask), axis=0)
 
     @staticmethod
     def weighted_mpjpe(predicted, target, w):
@@ -70,9 +68,7 @@ class Scorer:
         assert predicted.shape == target.shape
         assert w.shape[0] == predicted.shape[1]
         mask = Scorer.valid_mask(predicted)
-        p_ma = ma.masked_array(predicted, mask)
-        t_ma = ma.masked_array(target, mask)
-        return np.mean(w * np.linalg.norm(p_ma - t_ma, axis=len(t_ma.shape) - 1))
+        return np.mean(w * ma.masked_array(np.linalg.norm(predicted - target, axis=len(target.shape) - 1), mask))
 
     def pck(self, predicted, target):
         return self.PCK(predicted, target, self.pck_threshold)
@@ -85,7 +81,7 @@ class Scorer:
         sample_num = len(target)
         total = 0
         true_positive = 0
-        mask = Scorer.valid_mask(predicted).all(axis=-1)
+        mask = Scorer.valid_mask(predicted)
 
         for n in range(sample_num):
             gt = target[n]
@@ -102,7 +98,7 @@ class Scorer:
         sample_num = len(target)
         total = 0
         true_positive = np.zeros(target.shape[1])
-        mask = Scorer.valid_mask(predicted).all(axis=-1)
+        mask = Scorer.valid_mask(predicted)
 
         for n in range(sample_num):
             gt = target[n]
@@ -117,5 +113,4 @@ class Scorer:
     @staticmethod
     def valid_mask(pose):
         assert pose.shape[-1] == 3
-        v = np.expand_dims((pose == np.zeros_like(pose)).all(axis=-1), axis=-1)
-        return np.concatenate((v, v, v), axis=-1)
+        return (pose == np.zeros_like(pose)).all(axis=-1)

@@ -30,6 +30,21 @@ def test_mpjpe_with_unvalid():
     assert Scorer.mpjpe(p1, p2) == 0
 
 
+def test_mpjpe_simple():
+    p1 = np.ones((2, 2, 3))
+    p2 = np.ones((2, 2, 3))
+    p1[0][0][0] = 0
+    assert np.isclose(Scorer.mpjpe(p1, p2), 0.25)
+
+
+def test_mpjpe_simple_with_unvalid():
+    p1 = np.ones((2, 2, 3))
+    p2 = np.ones((2, 2, 3))
+    p1[0][0] = np.zeros(3)
+    p1[0][1][0] = 0
+    assert np.isclose(Scorer.mpjpe(p1, p2), 1/3) 
+
+
 def test_mpjpe_byjoint():
     p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
     p2 = np.copy(p1)
@@ -48,22 +63,56 @@ def test_mpjpe_byjoint_with_unvalid():
     )
 
 
+def test_mpjpe_byjoint_simple():
+    p1 = np.ones((2, 2, 3))
+    p2 = np.ones((2, 2, 3))
+    p1[0][0][0] = 0
+    assert_array_equal(
+        Scorer.mpjpe_byjoint(p1, p2), np.array([0.5, 0])
+    )
+
+
+def test_mpjpe_byjoint_simple_with_unvalid():
+    p1 = np.ones((2, 2, 3))
+    p2 = np.ones((2, 2, 3))
+    p1[0][0] = np.zeros(3)
+    p1[0][1][0] = 0
+    assert_array_equal(
+        Scorer.mpjpe_byjoint(p1, p2), np.array([0, 0.5])
+    )
+
+
 def test_weighted_mpjpe():
     p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
     p2 = np.copy(p1)
-    assert_array_equal(
-        Scorer.mpjpe_byjoint(p1, p2), np.zeros(len(MOCAP_TO_HKMC))
-    )
+    w = np.ones(p1.shape[1])
+    assert Scorer.weighted_mpjpe(p1, p2, w) == 0
 
 
 def test_weighted_mpjpe_with_unvalid():
     p1 = uni_to_pose('./utils/tests/test_utils_3d/M01_01.uni', MOCAP_TO_HKMC, downsample=3)
     p2 = np.copy(p1)
+    w = np.ones(p1.shape[1])
     p1[0][0] = np.zeros(3)
     p2[0][0] = np.ones(3)
-    assert_array_equal(
-        Scorer.mpjpe_byjoint(p1, p2), np.zeros(len(MOCAP_TO_HKMC))
-    )
+    assert Scorer.weighted_mpjpe(p1, p2, w) == 0
+
+
+def test_weighted_mpjpe_simple():
+    p1 = np.ones((2, 2, 3))
+    p2 = np.ones((2, 2, 3))
+    w = np.ones(p1.shape[1])
+    p1[0][0][0] = 0
+    assert np.isclose(Scorer.weighted_mpjpe(p1, p2, w), 0.25)
+
+
+def test_weighted_mpjpe_simple_with_unvalid():
+    p1 = np.ones((2, 2, 3))
+    p2 = np.ones((2, 2, 3))
+    w = np.ones(p1.shape[1])
+    p1[0][0] = np.zeros(3)
+    p1[0][1][0] = 0
+    assert np.isclose(Scorer.weighted_mpjpe(p1, p2, w), 1/3) 
 
 
 def test_pck():
@@ -104,7 +153,7 @@ def test_pck_byjoint_with_unvalid():
 
 def test_valid_mask():
     a = np.zeros((5, 12, 3))
-    b = np.empty((5, 12, 3))
+    b = np.empty((5, 12))
     b.fill(True)
     assert_array_equal(
         Scorer.valid_mask(a), b

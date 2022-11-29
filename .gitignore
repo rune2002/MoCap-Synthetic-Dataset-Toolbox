@@ -1,5 +1,7 @@
 *.mp4
 *.json
+*.npz
 data
 utils/skeleton.py
 *__pycache__*
+visualize/*

@@ -4,7 +4,7 @@
 * Please refer to [`DATASETS.md`](./DATASETS.md) for the preparation of the dataset files. 
 
 ## Save a npz file
-The size of pose is (Frames, Joints, XYZ) and the submission data is dictionary which has key of video name and value of pose. Then you save the data to npz files and submit the file.
+The size of pose is (Frames, Joints, XYZ) and the submission data is dictionary which has keys of video name and values of pose. If xyz values of a joint are invalid, set x=y=z=0, so that evaluation metrics can be calculated properly. Then you save the data to npz files and submit the file.
 ```python
 from utils.data_utils import save_npz
 

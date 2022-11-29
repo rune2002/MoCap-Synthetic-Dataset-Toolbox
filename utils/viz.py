@@ -19,6 +19,7 @@ class Viz:
         self.MOCAP_NAMES = data["MOCAP_NAMES"]
         self.HKMC_NAMES = data["HKMC_NAMES"]
         self.HKMC_ADJ_LIST = data["HKMC_ADJ_LIST"]
+        self.HKMC_EDGES = data["HKMC_EDGES"]
 
 
     def npz_to_images(self, d, output_dir):
@@ -27,19 +28,23 @@ class Viz:
 
 
     def poses_to_images(self, poses, key, output_dir):
-        fig = plt.figure()
-        ax = Axes3D(fig)
+        images_dir = os.path.join(output_dir, key)
+
+        if not os.path.exists(images_dir):
+            os.makedirs(images_dir)
+
         for i, pose in enumerate(poses):
-            self.show_3d_pose(poses, ax)
+            fig = plt.figure()
+            ax = Axes3D(fig)
+            self.show_3d_pose(pose, ax)
             fig.canvas.draw()
-            images_dir = os.path.join(output_dir, key)
             plt.savefig(os.path.join(images_dir, f'{i:03d}.png'))
-            plt.clf()
+            plt.close()
         
-        self.images_dir_to_gif(images_dir, output_dir)
+        self.images_dir_to_gif(images_dir, os.path.join(output_dir, f'{key}.gif'))
 
 
-    def show_3d_pose(self, pose, ax, add_labels=True):
+    def show_3d_pose(self, pose, ax):
         """Visualize a 3d skeleton"""
         
         assert np.shape(pose)[0] == len(self.HKMC_NAMES)
@@ -51,11 +56,10 @@ class Viz:
             ax.plot([p[i][0], p[j][0]], [p[i][1], p[j][1]], [p[i][2] , p[j][2]])
             # ax.plot([p[i][0], p[j][0]], [p[i][2], p[j][2]], [-p[i][1] , -p[j][1]])
 
-        RADIUS = 100 # space around the subject
-
+        # RADIUS = 100 # space around the subject
         # ax.set_xlim3d([-RADIUS, RADIUS])
         # ax.set_ylim3d([-RADIUS, RADIUS])
-        # ax.set_zlim3d([-RADIUS, RADIUS])
+        # ax.set_zlim3d([0, 2 * RADIUS])
         
         # ax.get_xaxis().set_ticklabels([])
         # ax.get_yaxis().set_ticklabels([])
@@ -64,8 +68,8 @@ class Viz:
         # ax.w_xaxis.set_pane_color(white)
         # ax.w_yaxis.set_pane_color(white)
 
-
-    def images_dir_to_gif(self, images_dir, gif_path, fps=10):
+    @staticmethod
+    def images_dir_to_gif(images_dir, gif_path, fps=10):
         images = []
         for image in os.listdir(images_dir):
             images.append(imageio.imread(os.path.join(images_dir, image)))
