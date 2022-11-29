@@ -25,7 +25,6 @@ if __name__ == '__main__':
             pose = uni_to_pose(os.path.join(kps3d_dir, file), MOCAP_TO_HKMC)
             tc = np.array([-56.98, 129.79, -0.38])
             R, t = extrinsic_parameter(1.34, -1.47, -42.30, tc)
-            pose = [mocap_to_camera(p, R, t) for p in pose] 
-            d[filename] = pose
-
+            pose = np.array([mocap_to_camera(p, R, t) for p in pose])
+            d[filename] = 10 * np.array(pose)
         save_npz(os.path.join('./data', camera, 'target.npz'), d)
