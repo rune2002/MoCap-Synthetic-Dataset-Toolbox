@@ -21,7 +21,7 @@ if __name__ == '__main__':
         kps3d_dir = os.path.join('./data', camera, 'kps3d')
         output_dir = os.path.join('./data', camera, 'target.npz')
         for file in os.listdir(kps3d_dir):
-            _, filename = os.path.split(file)
+            filename, _ = os.path.splitext(file)
             pose = uni_to_pose(os.path.join(kps3d_dir, file), MOCAP_TO_HKMC)
             tc = np.array([-56.98, 129.79, -0.38])
             R, t = extrinsic_parameter(1.34, -1.47, -42.30, tc)
